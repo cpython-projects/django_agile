@@ -1,5 +1,4 @@
 from rest_framework.relations import StringRelatedField
-from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from ..models import Task
 from . import TagSerializer
@@ -13,7 +12,7 @@ class TaskSerializer(ModelSerializer):
         model = Task
         fields = [
             'id', 'title', 'description', 'status', 'priority',
-            'project', 'tags', 'created', 'due_date', 'updated', 'deleted', 'assigned'
+            'project', 'tags', 'created_at', 'due_date', 'updated_at', 'deleted_at', 'assigned'
         ]
 
 

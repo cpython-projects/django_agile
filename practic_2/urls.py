@@ -21,9 +21,12 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('', home, name='home'),
-    # path('api/v1/', include('project.urls')),
+
+    # API endpoints
+    path('api/v1/', include('apps.projects.urls')),
+    path('api/v1/', include('apps.tasks.urls')),
 ]
 
+# Подключение медиа-файлов (например, ProjectFile)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

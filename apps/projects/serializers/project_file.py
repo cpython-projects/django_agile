@@ -7,6 +7,6 @@ from ..models import ProjectFile
 class ProjectFileSerializer(ModelSerializer):
     class Meta:
         model = ProjectFile
-        fields = ['id', 'name', 'file', 'created']
+        fields = ['id', 'name', 'file', 'created_at']
 
 
