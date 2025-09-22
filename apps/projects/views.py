@@ -5,7 +5,7 @@ from django.utils.dateparse import parse_date
 from django.shortcuts import get_object_or_404
 from .models import Project
 from .serializers import AllProjectsSerializer, CreateProjectSerializer, ProjectDetailSerializer
-
+from rest_framework.exceptions import NotFound
 
 class ProjectsListAPIView(APIView):
     """
@@ -67,3 +67,53 @@ class ProjectsDetailAPIView(APIView):
         project = self.get_object(pk)
         project.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+def get_project(project_id):
+    try:
+        return Project.objects.get(pk=project_id)
+
+    except Project.DoesNotExist:
+        raise NotFound(detail=f'Проект (id={project_id}) не найден')
+
+
+"""
+Создать сериализатор ProjectDetailSerializer
+Написать классовое отображение ProjectDetailAPIView (методы get, put, delete)
+Реализовать эндпоинт:
+    GET /api/v1/projects/<id>/ — получить проект
+    PUT /api/v1/projects/<id>/ — обновить проект (поддержка частичного обновления)
+    DELETE /api/v1/projects/<id>/ — удалить проект
+Проверить работу запросов"""
+class ProjectDetailAPIView(APIView):
+    def get(self, request, pk):
+
+        project = get_project(pk)
+        serializer = ProjectDetailSerializer(project)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, pk):
+        project = get_project(pk)
+        serializer = ProjectDetailSerializer(project, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        project = get_project(pk)
+        serializer = ProjectDetailSerializer(project, data=request.data, partial=True)  # частичное
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        project = get_project(pk)
+        project.delete()
+
+        return Response({"message": f"Deleted project (id={pk}) success"}, status=status.HTTP_204_NO_CONTENT)
