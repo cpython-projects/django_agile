@@ -1,9 +1,10 @@
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import Project, ProjectFile
-from .serializers import ProjectSerializer, ProjectDetailSerializer, ProjectFileSerializer
+from .serializers import ProjectSerializer, ProjectDetailSerializer, ProjectFileSerializer,AllProjectFileSerializer, CreateProjectFileSerializer
 
 
 # ======================= Projects ==================================
@@ -84,3 +85,29 @@ def projectfile_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+#Написать классовое отображение ProjectFileListAPIView:
+# GET /api/v1/projects/files/ — список файлов (с фильтром по имени проекта)
+# POST /api/v1/projects/files/ — загрузка файла и привязка к проекту
+
+class ProjectFileListAPIView(APIView):
+    """
+    GET: список файлов (с фильтром по имени проекта ?project=NAME)
+    POST: загрузка нового файла
+    """
+
+    def get(self, request):
+        projects_name = request.query_params.get('project')
+        queryset = ProjectFile.objects.all()
+        if projects_name:
+            queryset = queryset.filter(projects__name__icontains=projects_name)
+
+        serializer = AllProjectFileSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        serializer = CreateProjectFileSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.save()
+            return Response(CreateProjectFileSerializer(data).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
